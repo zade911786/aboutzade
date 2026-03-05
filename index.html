@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zade — Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050810;
+    --bg2: #080d1a;
+    --accent: #00d4ff;
+    --accent2: #7b2fff;
+    --accent3: #ff2fbd;
+    --text: #e8eaf6;
+    --text-muted: #6b7a99;
+    --glass: rgba(255,255,255,0.04);
+    --glass-border: rgba(0,212,255,0.15);
+    --glow: 0 0 40px rgba(0,212,255,0.3);
+    --glow2: 0 0 40px rgba(123,47,255,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow-x: hidden; cursor: none; }
+
+  /* ─── SPLASH SCREEN ─── */
+  #splash {
+    position: fixed; inset: 0; z-index: 10000;
+    background: #050810;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 32px;
+    transition: opacity .6s ease, visibility .6s ease;
+  }
+  #splash.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+  .splash-name {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3rem, 10vw, 7rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: -3px;
+    opacity: 0; transform: translateY(20px);
+    animation: splashIn 0.8s 0.3s cubic-bezier(.22,1,.36,1) forwards;
+  }
+  @keyframes splashIn { to { opacity: 1; transform: none; } }
+  .splash-bar-wrap {
+    width: min(340px, 80vw);
+    height: 3px; background: rgba(255,255,255,0.06);
+    border-radius: 10px; overflow: hidden;
+    opacity: 0; animation: splashIn 0.5s 0.8s ease forwards;
+  }
+  .splash-bar-fill {
+    height: 100%; width: 0;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+    border-radius: 10px;
+    box-shadow: 0 0 12px rgba(0,212,255,0.7);
+    animation: splashFill 1.4s 1s cubic-bezier(.22,1,.36,1) forwards;
+  }
+  @keyframes splashFill { to { width: 100%; } }
+  .splash-sub {
+    font-family: 'Space Mono', monospace; font-size: .7rem;
+    letter-spacing: 3px; color: var(--text-muted);
+    opacity: 0; animation: splashIn 0.5s 0.9s ease forwards;
+  }
+
+  /* ─── SCROLL PROGRESS BAR ─── */
+  #scroll-progress {
+    position: fixed; top: 0; left: 0; z-index: 200;
+    height: 3px; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+    box-shadow: 0 0 10px rgba(0,212,255,0.8), 0 0 20px rgba(0,212,255,0.4);
+    transition: width .1s linear;
+  }
+
+  /* ─── CURSOR ─── */
+  #cursor {
+    position: fixed; width: 20px; height: 20px;
+    background: var(--accent); border-radius: 50%;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: width .2s, height .2s, opacity .2s;
+    mix-blend-mode: screen; filter: blur(4px); opacity: 0.8;
+  }
+  #cursor-trail {
+    position: fixed; width: 40px; height: 40px;
+    border: 1px solid rgba(0,212,255,0.4); border-radius: 50%;
+    pointer-events: none; z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: all .12s ease;
+  }
+
+  /* ─── PARTICLES ─── */
+  #particles-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 60px;
+    background: rgba(5,8,16,0.7); backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0,212,255,0.08);
+    transition: all .3s;
+  }
+  nav.scrolled { padding: 12px 60px; }
+  .nav-logo {
+    font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: -1px;
+  }
+  .nav-links { display: flex; gap: 32px; list-style: none; align-items: center; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none;
+    font-size: .85rem; letter-spacing: 1.5px; text-transform: uppercase;
+    font-family: 'Space Mono', monospace; transition: color .3s;
+    position: relative;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -4px; left: 0;
+    width: 0; height: 1px; background: var(--accent); transition: width .3s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-links a:hover::after { width: 100%; }
+
+  .lang-btn {
+    background: var(--glass); border: 1px solid var(--glass-border);
+    color: var(--accent); padding: 7px 16px; border-radius: 30px; cursor: pointer;
+    font-family: 'Space Mono', monospace; font-size: .75rem;
+    transition: all .3s; letter-spacing: 1px;
+  }
+  .lang-btn:hover { background: rgba(0,212,255,0.1); box-shadow: var(--glow); }
+
+  /* ─── HAMBURGER ─── */
+  .nav-hamburger {
+    display: none; flex-direction: column; justify-content: center;
+    gap: 5px; cursor: pointer; z-index: 200;
+    width: 40px; height: 40px; padding: 8px;
+    background: var(--glass); border: 1px solid var(--glass-border);
+    border-radius: 10px; transition: all .3s;
+  }
+  .nav-hamburger:hover { background: rgba(0,212,255,0.1); box-shadow: var(--glow); }
+  .nav-hamburger span {
+    width: 100%; height: 2px; background: var(--accent); border-radius: 2px;
+    transition: all .35s cubic-bezier(.22,1,.36,1); transform-origin: center;
+    display: block;
+  }
+  .nav-hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .nav-hamburger.active span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .nav-hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* ─── MOBILE OVERLAY MENU ─── */
+  .mobile-menu-overlay {
+    position: fixed; inset: 0; z-index: 150;
+    background: rgba(5,8,16,0.6); backdrop-filter: blur(6px);
+    opacity: 0; visibility: hidden; transition: all .3s;
+  }
+  .mobile-menu-overlay.open { opacity: 1; visibility: visible; }
+  .mobile-menu-panel {
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(320px, 85vw);
+    background: linear-gradient(160deg, rgba(8,13,26,0.98), rgba(5,8,16,0.99));
+    backdrop-filter: blur(30px);
+    border-left: 1px solid var(--glass-border);
+    z-index: 160;
+    padding: 0;
+    transform: translateX(100%); transition: transform .4s cubic-bezier(.22,1,.36,1);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .mobile-menu-overlay.open .mobile-menu-panel { transform: translateX(0); }
+  .mobile-menu-header {
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid rgba(0,212,255,0.08);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .mobile-menu-logo {
+    font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .mobile-close-btn {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--accent); font-size: 1.2rem;
+    transition: all .2s;
+  }
+  .mobile-close-btn:hover { background: rgba(0,212,255,0.15); }
+  .mobile-nav-links {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 24px 20px; flex: 1; list-style: none;
+  }
+  .mobile-nav-links li a {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px; border-radius: 14px;
+    color: var(--text-muted); text-decoration: none;
+    font-family: 'Space Mono', monospace; font-size: .85rem;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    transition: all .25s;
+    border: 1px solid transparent;
+  }
+  .mobile-nav-links li a .menu-icon { font-size: 1.1rem; width: 24px; text-align: center; }
+  .mobile-nav-links li a:hover {
+    color: var(--accent); background: rgba(0,212,255,0.06);
+    border-color: rgba(0,212,255,0.12); transform: translateX(4px);
+  }
+  .mobile-menu-footer {
+    padding: 20px 28px 32px;
+    border-top: 1px solid rgba(0,212,255,0.08);
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  }
+  .mobile-lang-btn {
+    background: var(--glass); border: 1px solid var(--glass-border);
+    color: var(--accent); padding: 8px 20px; border-radius: 30px;
+    cursor: pointer; font-family: 'Space Mono', monospace; font-size: .75rem;
+    letter-spacing: 1px; transition: all .3s; flex: 1; text-align: center;
+  }
+  .mobile-lang-btn:hover { background: rgba(0,212,255,0.1); }
+
+  /* ─── SECTIONS ─── */
+  section { position: relative; z-index: 1; }
+
+  /* ─── HERO ─── */
+  #hero {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 120px 20px 60px; position: relative; overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 40%, rgba(0,212,255,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse at 80% 80%, rgba(123,47,255,0.08) 0%, transparent 60%);
+  }
+  .hero-content { position: relative; z-index: 2; }
+
+  /* ─── PHOTO CIRCLE — KEEP CIRCLE UI, ADD COLOR-CHANGING GLOW ─── */
+  .photo-circle {
+    width: 160px; height: 160px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+    padding: 3px; margin: 0 auto 40px;
+    animation: photoGlowCycle 8s ease-in-out infinite, fadeInDown .8s ease both;
+    position: relative;
+  }
+  /* Outer radial glow that changes color */
+  .photo-circle::before {
+    content: ''; position: absolute; inset: -18px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,212,255,0.18) 0%, transparent 70%);
+    animation: photoBgCycle 8s ease-in-out infinite;
+    z-index: -1;
+  }
+  /* Second wider glow ring */
+  .photo-circle::after {
+    content: ''; position: absolute; inset: -36px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(123,47,255,0.10) 0%, transparent 70%);
+    animation: photoBgCycle2 8s ease-in-out infinite;
+    z-index: -2;
+  }
+  @keyframes photoGlowCycle {
+    0%   { box-shadow: 0 0 24px rgba(0,212,255,0.6), 0 0 60px rgba(0,212,255,0.25); background: linear-gradient(135deg,#00d4ff,#7b2fff,#ff2fbd); }
+    25%  { box-shadow: 0 0 32px rgba(123,47,255,0.7), 0 0 80px rgba(123,47,255,0.3); background: linear-gradient(135deg,#7b2fff,#ff2fbd,#00d4ff); }
+    50%  { box-shadow: 0 0 36px rgba(255,47,189,0.7), 0 0 90px rgba(255,47,189,0.3); background: linear-gradient(135deg,#ff2fbd,#00d4ff,#7b2fff); }
+    75%  { box-shadow: 0 0 28px rgba(0,255,180,0.6), 0 0 70px rgba(0,255,180,0.25); background: linear-gradient(135deg,#00ffb4,#00d4ff,#7b2fff); }
+    100% { box-shadow: 0 0 24px rgba(0,212,255,0.6), 0 0 60px rgba(0,212,255,0.25); background: linear-gradient(135deg,#00d4ff,#7b2fff,#ff2fbd); }
+  }
+  @keyframes photoBgCycle {
+    0%   { background: radial-gradient(circle, rgba(0,212,255,0.18) 0%, transparent 70%); }
+    25%  { background: radial-gradient(circle, rgba(123,47,255,0.18) 0%, transparent 70%); }
+    50%  { background: radial-gradient(circle, rgba(255,47,189,0.18) 0%, transparent 70%); }
+    75%  { background: radial-gradient(circle, rgba(0,255,180,0.18) 0%, transparent 70%); }
+    100% { background: radial-gradient(circle, rgba(0,212,255,0.18) 0%, transparent 70%); }
+  }
+  @keyframes photoBgCycle2 {
+    0%   { background: radial-gradient(circle, rgba(0,212,255,0.08) 0%, transparent 70%); }
+    25%  { background: radial-gradient(circle, rgba(123,47,255,0.08) 0%, transparent 70%); }
+    50%  { background: radial-gradient(circle, rgba(255,47,189,0.08) 0%, transparent 70%); }
+    75%  { background: radial-gradient(circle, rgba(0,255,180,0.08) 0%, transparent 70%); }
+    100% { background: radial-gradient(circle, rgba(0,212,255,0.08) 0%, transparent 70%); }
+  }
+  .photo-circle-inner {
+    width: 100%; height: 100%; border-radius: 50%;
+    background: #0d1225;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 4rem; overflow: hidden;
+  }
+  .photo-circle-inner img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  .photo-circle-inner .avatar-placeholder {
+    font-size: 4rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-family: 'Syne', sans-serif; font-weight: 800;
+  }
+
+  .hero-name {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(4rem, 12vw, 9rem); font-weight: 800; line-height: .95;
+    letter-spacing: -4px;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 50%, var(--accent2) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    animation: fadeInUp .8s .2s ease both;
+    filter: drop-shadow(0 0 30px rgba(0,212,255,0.4));
+  }
+  .hero-subtitle {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(.7rem, 1.5vw, .95rem); color: var(--accent);
+    letter-spacing: 3px; margin: 16px 0 24px;
+    animation: fadeInUp .8s .4s ease both; opacity: 0;
+  }
+  .hero-typed {
+    font-size: clamp(1rem, 2vw, 1.2rem); color: var(--text-muted);
+    min-height: 1.5em; animation: fadeInUp .8s .6s ease both; opacity: 0;
+  }
+  .hero-typed span { color: var(--accent2); }
+  .cursor-blink { animation: blink .7s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  .hero-desc {
+    max-width: 540px; margin: 24px auto 40px;
+    color: var(--text-muted); line-height: 1.8; font-size: .95rem;
+    animation: fadeInUp .8s .8s ease both; opacity: 0;
+  }
+  .hero-cta {
+    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+    animation: fadeInUp .8s 1s ease both; opacity: 0;
+  }
+  .btn-primary {
+    padding: 14px 36px; border-radius: 50px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-family: 'Space Mono', monospace;
+    font-size: .8rem; letter-spacing: 1.5px; text-decoration: none;
+    border: none; cursor: pointer;
+    box-shadow: 0 0 30px rgba(0,212,255,0.4); transition: all .3s;
+    position: relative; overflow: hidden;
+  }
+  .btn-primary::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--accent2), var(--accent3));
+    opacity: 0; transition: opacity .3s;
+  }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 0 50px rgba(0,212,255,0.6); }
+  .btn-primary:hover::before { opacity: 1; }
+  .btn-primary span { position: relative; z-index: 1; }
+  .btn-outline {
+    padding: 14px 36px; border-radius: 50px; background: transparent;
+    border: 1px solid rgba(0,212,255,0.4); color: var(--accent);
+    font-family: 'Space Mono', monospace; font-size: .8rem;
+    letter-spacing: 1.5px; text-decoration: none; cursor: pointer; transition: all .3s;
+  }
+  .btn-outline:hover { background: rgba(0,212,255,0.08); transform: translateY(-3px); box-shadow: var(--glow); }
+
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:none} }
+  @keyframes fadeInDown { from{opacity:0;transform:translateY(-30px)} to{opacity:1;transform:none} }
+
+  /* ─── SCROLL INDICATOR ─── */
+  .scroll-indicator {
+    position: absolute; bottom: 40px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    opacity: .5; animation: bounce 2s infinite;
+  }
+  .scroll-indicator span { font-size: .65rem; letter-spacing: 2px; color: var(--text-muted); font-family: 'Space Mono', monospace; }
+  .scroll-line { width: 1px; height: 40px; background: linear-gradient(to bottom, var(--accent), transparent); }
+  @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(8px)} }
+
+  /* ─── ABOUT ─── */
+  #about {
+    padding: 120px 60px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+    max-width: 1200px; margin: 0 auto; align-items: center;
+  }
+  .section-label {
+    font-family: 'Space Mono', monospace; font-size: .7rem;
+    letter-spacing: 3px; color: var(--accent); text-transform: uppercase;
+    margin-bottom: 16px; display: flex; align-items: center; gap: 12px;
+  }
+  .section-label::before { content: '//'; color: var(--accent2); }
+  .section-title {
+    font-family: 'Syne', sans-serif; font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 800; line-height: 1.1; letter-spacing: -2px; margin-bottom: 24px;
+  }
+  .section-title .glow-text {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .about-text { color: var(--text-muted); line-height: 1.9; font-size: .95rem; }
+  .about-text p + p { margin-top: 16px; }
+  .about-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .tag {
+    background: var(--glass); border: 1px solid var(--glass-border);
+    padding: 6px 16px; border-radius: 30px; font-size: .75rem;
+    font-family: 'Space Mono', monospace; color: var(--accent); letter-spacing: 1px; transition: all .3s;
+  }
+  .tag:hover { background: rgba(0,212,255,0.1); box-shadow: var(--glow); transform: translateY(-2px); }
+
+  .about-visual { position: relative; display: flex; align-items: center; justify-content: center; }
+  .about-card {
+    background: var(--glass); border: 1px solid var(--glass-border);
+    border-radius: 24px; padding: 40px; backdrop-filter: blur(20px);
+    box-shadow: var(--glow); width: 100%;
+  }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block;
+  }
+  .stat-label { font-size: .7rem; color: var(--text-muted); letter-spacing: 1.5px; font-family: 'Space Mono', monospace; text-transform: uppercase; margin-top: 4px; }
+
+  /* ─── ANIMATED COUNTERS ─── */
+  .counter { display: inline-block; }
+
+  /* ─── SKILLS ─── */
+  #skills { padding: 120px 60px; max-width: 1200px; margin: 0 auto; }
+  .skills-header { text-align: center; margin-bottom: 60px; }
+  .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+  .skill-card {
+    background: var(--glass); border: 1px solid var(--glass-border);
+    border-radius: 20px; padding: 32px; backdrop-filter: blur(20px);
+    transition: all .4s; position: relative; overflow: hidden;
+  }
+  .skill-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transform: scaleX(0); transform-origin: left; transition: transform .4s;
+  }
+  .skill-card:hover { transform: translateY(-8px); border-color: rgba(0,212,255,0.3); box-shadow: var(--glow); }
+  .skill-card:hover::before { transform: scaleX(1); }
+  .skill-icon { font-size: 2rem; margin-bottom: 16px; }
+  .skill-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 8px; color: var(--text); }
+  .skill-desc { font-size: .8rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6; }
+  .skill-bar { height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+  .skill-fill {
+    height: 100%; border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width: 0; transition: width 1.5s cubic-bezier(.22,1,.36,1);
+    box-shadow: 0 0 10px rgba(0,212,255,0.5);
+  }
+  .skill-level { display: flex; justify-content: space-between; margin-top: 8px; font-size: .65rem; font-family: 'Space Mono', monospace; color: var(--text-muted); }
+
+  /* ─── PROJECTS ─── */
+  #projects { padding: 120px 60px; max-width: 1400px; margin: 0 auto; }
+  .projects-header { text-align: center; margin-bottom: 60px; }
+  .projects-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 48px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 10px 28px; border-radius: 30px; border: 1px solid rgba(0,212,255,0.2);
+    background: transparent; color: var(--text-muted);
+    font-family: 'Space Mono', monospace; font-size: .75rem;
+    letter-spacing: 1px; cursor: pointer; transition: all .3s;
+  }
+  .tab-btn.active { background: rgba(0,212,255,0.1); border-color: var(--accent); color: var(--accent); }
+  .tab-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 28px; }
+  .project-card {
+    background: var(--glass); border: 1px solid var(--glass-border);
+    border-radius: 24px; padding: 0; overflow: hidden;
+    backdrop-filter: blur(20px); transition: all .4s; cursor: pointer;
+    position: relative;
+  }
+  .project-card:hover { transform: translateY(-10px); box-shadow: 0 20px 60px rgba(0,212,255,0.15); border-color: rgba(0,212,255,0.3); }
+  .project-header {
+    padding: 28px 28px 20px;
+    background: linear-gradient(135deg, rgba(0,212,255,0.05), rgba(123,47,255,0.05));
+    border-bottom: 1px solid var(--glass-border);
+    display: flex; align-items: center; gap: 16px;
+  }
+  .project-icon {
+    width: 50px; height: 50px; border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; flex-shrink: 0;
+    box-shadow: 0 0 20px rgba(0,212,255,0.3);
+  }
+  .project-type { font-family: 'Space Mono', monospace; font-size: .65rem; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
+  .project-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; margin-top: 2px; }
+  .project-body { padding: 24px 28px 28px; }
+  .project-desc { color: var(--text-muted); font-size: .85rem; line-height: 1.7; margin-bottom: 20px; }
+  .project-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .project-tag { background: rgba(123,47,255,0.1); border: 1px solid rgba(123,47,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: .65rem; font-family: 'Space Mono', monospace; color: var(--accent2); }
+  .project-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--accent); font-size: .75rem; font-family: 'Space Mono', monospace;
+    text-decoration: none; letter-spacing: 1px; transition: gap .3s;
+  }
+  .project-link:hover { gap: 14px; }
+  /* Game badge */
+  .game-badge {
+    position: absolute; top: 14px; right: 14px;
+    background: linear-gradient(135deg, rgba(255,47,189,0.2), rgba(123,47,255,0.2));
+    border: 1px solid rgba(255,47,189,0.35);
+    color: #ff7fe8; font-family: 'Space Mono', monospace;
+    font-size: .6rem; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px;
+  }
+
+  /* ─── ACHIEVEMENTS ─── */
+  #achievements { padding: 120px 60px; max-width: 1200px; margin: 0 auto; }
+  .achievements-header { text-align: center; margin-bottom: 60px; }
+  .achievements-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+  .achievement-card {
+    background: var(--glass); border: 1px solid var(--glass-border);
+    border-radius: 20px; padding: 28px 24px;
+    backdrop-filter: blur(20px); transition: all .4s;
+    display: flex; align-items: flex-start; gap: 18px;
+    position: relative; overflow: hidden;
+  }
+  .achievement-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(0,212,255,0.04), rgba(123,47,255,0.04));
+    opacity: 0; transition: opacity .4s;
+  }
+  .achievement-card:hover { transform: translateY(-6px); border-color: rgba(0,212,255,0.3); box-shadow: var(--glow); }
+  .achievement-card:hover::before { opacity: 1; }
+  .achievement-badge {
+    width: 52px; height: 52px; flex-shrink: 0; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; box-shadow: 0 0 20px rgba(0,212,255,0.3);
+  }
+  .achievement-info { flex: 1; }
+  .achievement-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 6px; }
+  .achievement-desc { font-size: .8rem; color: var(--text-muted); line-height: 1.5; }
+
+  /* ─── FUN FACTS ─── */
+  #funfacts { padding: 120px 60px; max-width: 1200px; margin: 0 auto; }
+  .funfacts-header { text-align: center; margin-bottom: 60px; }
+  .funfacts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+  .funfact-card {
+    background: var(--glass); border: 1px solid var(--glass-border);
+    border-radius: 20px; padding: 28px; backdrop-filter: blur(20px);
+    transition: all .4s; display: flex; align-items: flex-start; gap: 16px;
+  }
+  .funfact-card:hover { transform: translateY(-6px); border-color: rgba(0,212,255,0.3); box-shadow: var(--glow); }
+  .funfact-num {
+    font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1; flex-shrink: 0;
+  }
+  .funfact-text { color: var(--text-muted); font-size: .9rem; line-height: 1.6; padding-top: 4px; }
+  .funfact-text strong { color: var(--text); }
+
+  /* ─── CONTACT ─── */
+  #contact {
+    padding: 120px 60px; max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start;
+  }
+  .contact-info .section-title { margin-bottom: 20px; }
+  .contact-desc { color: var(--text-muted); line-height: 1.8; margin-bottom: 40px; }
+  .social-links { display: flex; flex-direction: column; gap: 16px; }
+  .social-btn {
+    display: flex; align-items: center; gap: 16px;
+    background: var(--glass); border: 1px solid var(--glass-border);
+    border-radius: 16px; padding: 16px 20px; text-decoration: none; color: var(--text);
+    transition: all .3s;
+  }
+  .social-btn:hover { border-color: rgba(0,212,255,0.4); transform: translateX(6px); box-shadow: var(--glow); background: rgba(0,212,255,0.04); }
+  .social-btn-icon { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+  .social-btn-icon img { width: 22px; height: 22px; object-fit: contain; filter: brightness(0) invert(1); }
+  .social-btn-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .95rem; }
+  .social-btn-handle { font-size: .75rem; color: var(--text-muted); font-family: 'Space Mono', monospace; }
+  .social-btn-arrow { margin-left: auto; color: var(--accent); transition: transform .3s; }
+  .social-btn:hover .social-btn-arrow { transform: translateX(4px); }
+
+  .contact-form { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 24px; padding: 40px; backdrop-filter: blur(20px); }
+  .form-title { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 32px; }
+  .form-group { margin-bottom: 24px; }
+  .form-group label { display: block; font-family: 'Space Mono', monospace; font-size: .65rem; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 8px; }
+  .form-group input, .form-group textarea {
+    width: 100%; background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+    padding: 14px 16px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: .9rem;
+    transition: border-color .3s, box-shadow .3s; outline: none;
+  }
+  .form-group input:focus, .form-group textarea:focus { border-color: rgba(0,212,255,0.4); box-shadow: 0 0 20px rgba(0,212,255,0.1); }
+  .form-group textarea { height: 140px; resize: none; }
+  .form-error { font-size: .75rem; color: #ff4466; margin-top: 6px; display: none; font-family: 'Space Mono', monospace; }
+  .form-success { background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2); border-radius: 12px; padding: 14px 18px; font-size: .85rem; color: var(--accent); margin-bottom: 24px; display: none; }
+  .submit-btn {
+    width: 100%; padding: 16px; border-radius: 50px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-family: 'Space Mono', monospace; font-size: .85rem;
+    letter-spacing: 2px; transition: all .3s;
+    box-shadow: 0 0 30px rgba(0,212,255,0.3);
+  }
+  .submit-btn:hover { transform: translateY(-3px); box-shadow: 0 0 50px rgba(0,212,255,0.5); }
+  .submit-btn:active { transform: none; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    text-align: center; padding: 40px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    color: var(--text-muted); font-size: .75rem;
+    font-family: 'Space Mono', monospace; letter-spacing: 1px;
+    position: relative; z-index: 1;
+  }
+  footer span { color: var(--accent); }
+
+  /* ─── SCROLL ANIMATIONS ─── */
+  .reveal { opacity: 0; transform: translateY(40px); transition: all .8s cubic-bezier(.22,1,.36,1); }
+  .reveal.visible { opacity: 1; transform: none; }
+  .reveal-left { opacity: 0; transform: translateX(-40px); transition: all .8s cubic-bezier(.22,1,.36,1); }
+  .reveal-left.visible { opacity: 1; transform: none; }
+  .reveal-right { opacity: 0; transform: translateX(40px); transition: all .8s cubic-bezier(.22,1,.36,1); }
+  .reveal-right.visible { opacity: 1; transform: none; }
+
+  .stagger-1 { transition-delay: .1s; }
+  .stagger-2 { transition-delay: .2s; }
+  .stagger-3 { transition-delay: .3s; }
+  .stagger-4 { transition-delay: .4s; }
+  .stagger-5 { transition-delay: .5s; }
+
+  /* ─── PARALLAX BG ─── */
+  .parallax-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .parallax-blob { position: absolute; border-radius: 50%; filter: blur(100px); opacity: .12; }
+  .blob1 { width: 500px; height: 500px; background: var(--accent); top: -100px; left: -100px; }
+  .blob2 { width: 400px; height: 400px; background: var(--accent2); bottom: 20%; right: -100px; }
+  .blob3 { width: 300px; height: 300px; background: var(--accent3); bottom: -50px; left: 30%; }
+
+  /* ─── CONFETTI ─── */
+  .confetti-piece {
+    position: fixed; width: 8px; height: 8px;
+    border-radius: 2px; z-index: 9999;
+    pointer-events: none; animation: confettiFall 2.5s ease-in forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ─── MOBILE ─── */
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    nav.scrolled { padding: 12px 24px; }
+    .nav-links { display: none !important; }
+    .nav-hamburger { display: flex; }
+    #about { grid-template-columns: 1fr; gap: 40px; padding: 80px 24px; }
+    #skills { padding: 80px 24px; }
+    #projects { padding: 80px 24px; }
+    #achievements { padding: 80px 24px; }
+    #funfacts { padding: 80px 24px; }
+    #contact { grid-template-columns: 1fr; gap: 40px; padding: 80px 24px; }
+    .hero-subtitle { font-size: .65rem; letter-spacing: 2px; }
+  }
+  @media (max-width: 600px) {
+    nav { padding: 14px 20px; }
+    .skills-grid { grid-template-columns: 1fr; }
+    .projects-grid { grid-template-columns: 1fr; }
+    .achievements-grid { grid-template-columns: 1fr; }
+    .funfacts-grid { grid-template-columns: 1fr; }
+    footer { padding: 30px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── SPLASH ─── -->
+<div id="splash">
+  <div class="splash-name">Zade</div>
+  <div class="splash-bar-wrap">
+    <div class="splash-bar-fill"></div>
+  </div>
+  <div class="splash-sub">LOADING PORTFOLIO...</div>
+</div>
+
+<!-- ─── SCROLL PROGRESS ─── -->
+<div id="scroll-progress"></div>
+
+<!-- Cursor -->
+<div id="cursor"></div>
+<div id="cursor-trail"></div>
+
+<!-- Parallax BG -->
+<div class="parallax-layer">
+  <div class="parallax-blob blob1"></div>
+  <div class="parallax-blob blob2"></div>
+  <div class="parallax-blob blob3"></div>
+</div>
+
+<!-- Particles -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- ─── NAV ─── -->
+<nav id="navbar">
+  <div class="nav-logo">Zade</div>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#hero" data-en="Home" data-es="Inicio" data-ar="الرئيسية" data-fa="خانه">Home</a></li>
+    <li><a href="#about" data-en="About" data-es="Sobre mí" data-ar="عني" data-fa="درباره">About</a></li>
+    <li><a href="#skills" data-en="Skills" data-es="Habilidades" data-ar="مهاراتي" data-fa="مهارت‌ها">Skills</a></li>
+    <li><a href="#projects" data-en="Projects" data-es="Proyectos" data-ar="مشاريعي" data-fa="پروژه‌ها">Projects</a></li>
+    <li><a href="#contact" data-en="Contact" data-es="Contacto" data-ar="تواصل" data-fa="تماس">Contact</a></li>
+    <li>
+      <button class="lang-btn" id="langBtn" onclick="cycleLang()">ES</button>
+    </li>
+  </ul>
+  <div class="nav-hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- ─── MOBILE MENU OVERLAY ─── -->
+<div class="mobile-menu-overlay" id="mobileOverlay" onclick="closeMobileMenu(event)">
+  <div class="mobile-menu-panel">
+    <div class="mobile-menu-header">
+      <div class="mobile-menu-logo">Zade</div>
+      <div class="mobile-close-btn" onclick="toggleMenu()">✕</div>
+    </div>
+    <ul class="mobile-nav-links">
+      <li><a href="#hero" onclick="toggleMenu()"><span class="menu-icon">🏠</span><span data-en="Home" data-es="Inicio" data-ar="الرئيسية" data-fa="خانه">Home</span></a></li>
+      <li><a href="#about" onclick="toggleMenu()"><span class="menu-icon">👤</span><span data-en="About" data-es="Sobre mí" data-ar="عني" data-fa="درباره">About</span></a></li>
+      <li><a href="#skills" onclick="toggleMenu()"><span class="menu-icon">⚡</span><span data-en="Skills" data-es="Habilidades" data-ar="مهاراتي" data-fa="مهارت‌ها">Skills</span></a></li>
+      <li><a href="#projects" onclick="toggleMenu()"><span class="menu-icon">🚀</span><span data-en="Projects" data-es="Proyectos" data-ar="مشاريعي" data-fa="پروژه‌ها">Projects</span></a></li>
+      <li><a href="#achievements" onclick="toggleMenu()"><span class="menu-icon">🏆</span><span data-en="Achievements" data-es="Logros" data-ar="الإنجازات" data-fa="دستاوردها">Achievements</span></a></li>
+      <li><a href="#contact" onclick="toggleMenu()"><span class="menu-icon">✉️</span><span data-en="Contact" data-es="Contacto" data-ar="تواصل" data-fa="تماس">Contact</span></a></li>
+    </ul>
+    <div class="mobile-menu-footer">
+      <button class="mobile-lang-btn" id="mobileLangBtn" onclick="cycleLang()">ES</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── HERO ─── -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="photo-circle">
+      <div class="photo-circle-inner">
+        <img src="zade.jpg" alt="Zade" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <span class="avatar-placeholder" style="display:none">Z</span>
+      </div>
+    </div>
+    <h1 class="hero-name">Zade</h1>
+    <p class="hero-subtitle" id="heroSubtitle">Athlete • Kickboxer • Web Developer • Bot Creator</p>
+    <div class="hero-typed">
+      <span id="typedText"></span><span class="cursor-blink">|</span>
+    </div>
+    <p class="hero-desc" id="heroDesc">
+      Based in Monterrey, Mexico — I train hard, build smart, and keep learning. From the football pitch to the kickboxing gym, and from the code editor to Telegram bots — I live at the intersection of discipline and technology.
+    </p>
+    <div class="hero-cta">
+      <a href="#projects" class="btn-primary"><span data-en="View My Work" data-es="Ver mi trabajo" data-ar="أعمالي" data-fa="آثارم">View My Work</span></a>
+      <a href="#contact" class="btn-outline" data-en="Contact Me" data-es="Contáctame" data-ar="تواصل معي" data-fa="تماس با من">Contact Me</a>
+    </div>
+  </div>
+  <div class="scroll-indicator">
+    <span data-en="SCROLL" data-es="BAJAR" data-ar="انزل" data-fa="پایین">SCROLL</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ─── ABOUT ─── -->
+<section id="about">
+  <div class="reveal-left">
+    <div class="section-label" data-en="About Me" data-es="Sobre mí" data-ar="عني" data-fa="درباره من">About Me</div>
+    <h2 class="section-title"><span class="glow-text" data-en="Who I Am" data-es="Quién soy" data-ar="من أنا" data-fa="من کی هستم">Who I Am</span></h2>
+    <div class="about-text">
+      <p id="aboutP1" data-en="I'm Zade, a medic student, athlete, and self-taught developer based in Monterrey, Mexico. I believe that discipline in sports translates directly into discipline in life — whether I'm pushing through a kickboxing session, running plays on the football field, or debugging code at midnight." data-es="Soy Zade, estudiante de medicina, atleta y desarrollador autodidacta radicado en Monterrey, México. Creo que la disciplina en el deporte se traduce directamente en disciplina en la vida." data-ar="أنا زيد، طالب طب ورياضي ومطور تقني في مونتيري، المكسيك. أؤمن أن الانضباط في الرياضة ينعكس مباشرة على الحياة." data-fa="من زید هستم، دانشجوی پزشکی، ورزشکار و توسعه‌دهنده خودآموخته در مونترِی، مکزیک.">
+        I'm Zade, a medic student, athlete, and self-taught developer based in Monterrey, Mexico. I believe that discipline in sports translates directly into discipline in life — whether I'm pushing through a kickboxing session, running plays on the football field, or debugging code at midnight.
+      </p>
+      <p id="aboutP2" style="margin-top:14px" data-en="I play football and basketball, practice kickboxing, and channel that same energy into building websites and Telegram bots. Tech isn't just a hobby — it's how I create real tools that help real people." data-es="Juego fútbol y baloncesto, practico kickboxing y canalizo esa misma energía en crear sitios web y bots de Telegram. La tecnología no es solo un pasatiempo." data-ar="ألعب كرة القدم والسلة، وأتدرب على الكيك بوكسينج، وأوظف تلك الطاقة في بناء مواقع ويب وبوتات تيليغرام." data-fa="فوتبال و بسکتبال بازی می‌کنم، کیک‌بوکسینگ تمرین می‌کنم و همان انرژی را در ساخت وب‌سایت و بات‌های تلگرام می‌ریزم.">
+        I play football and basketball, practice kickboxing, and channel that same energy into building websites and Telegram bots. Tech isn't just a hobby — it's how I create real tools that help real people.
+      </p>
+    </div>
+    <div class="about-tags">
+      <span class="tag">⚽ Football</span>
+      <span class="tag">🏀 Basketball</span>
+      <span class="tag">🥊 Kickboxing</span>
+      <span class="tag">💻 Web Dev</span>
+      <span class="tag">🤖 Telegram Bots</span>
+      <span class="tag">🩺 Medic Student</span>
+      <span class="tag">📍 Monterrey, MX</span>
+    </div>
+  </div>
+  <div class="reveal-right">
+    <div class="about-card">
+      <div class="stat-grid">
+        <div class="stat-item">
+          <span class="stat-num"><span class="counter" data-target="10">0</span>+</span>
+          <div class="stat-label" data-en="Websites Built" data-es="Sitios creados" data-ar="مواقع أنشأتها" data-fa="وب‌سایت ساخته‌شده">Websites Built</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num"><span class="counter" data-target="6">0</span>+</span>
+          <div class="stat-label" data-en="Bots Created" data-es="Bots creados" data-ar="بوتات أنشأتها" data-fa="بات ساخته‌شده">Bots Created</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num"><span class="counter" data-target="3">0</span></span>
+          <div class="stat-label" data-en="Sports Practiced" data-es="Deportes practicados" data-ar="رياضات أمارسها" data-fa="ورزش تمرین‌شده">Sports Practiced</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">∞</span>
+          <div class="stat-label" data-en="Ambition" data-es="Ambición" data-ar="الطموح" data-fa="بلندپروازی">Ambition</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SKILLS ─── -->
+<section id="skills">
+  <div class="skills-header reveal">
+    <div class="section-label" data-en="What I Do" data-es="Lo que hago" data-ar="ما أفعله" data-fa="چه می‌کنم">What I Do</div>
+    <h2 class="section-title"><span class="glow-text" data-en="Skills &amp; Expertise" data-es="Habilidades" data-ar="المهارات" data-fa="مهارت‌ها">Skills &amp; Expertise</span></h2>
+  </div>
+  <div class="skills-grid">
+    <div class="skill-card reveal stagger-1">
+      <div class="skill-icon">⚽</div>
+      <div class="skill-name" data-en="Football" data-es="Fútbol" data-ar="كرة القدم" data-fa="فوتبال">Football</div>
+      <div class="skill-desc" data-en="Passionate player with strong teamwork and strategic thinking on the pitch." data-es="Jugador apasionado con gran trabajo en equipo y pensamiento estratégico." data-ar="لاعب شغوف بروح الفريق والتفكير الاستراتيجي." data-fa="بازیکن پرشور با کار تیمی قوی و تفکر استراتژیک.">Passionate player with strong teamwork and strategic thinking on the pitch.</div>
+      <div class="skill-bar"><div class="skill-fill" data-level="88"></div></div>
+      <div class="skill-level"><span data-en="Experience" data-es="Experiencia" data-ar="خبرة" data-fa="تجربه">Experience</span><span data-en="13 yrs" data-es="13 años" data-ar="١٣ سنة" data-fa="۱۳ سال">13 yrs</span></div>
+    </div>
+    <div class="skill-card reveal stagger-2">
+      <div class="skill-icon">🏀</div>
+      <div class="skill-name" data-en="Basketball" data-es="Baloncesto" data-ar="كرة السلة" data-fa="بسکتبال">Basketball</div>
+      <div class="skill-desc" data-en="Agile court player with quick reflexes and sharp basketball IQ." data-es="Jugador ágil con reflejos rápidos e inteligencia de juego." data-ar="لاعب رشيق بردود أفعال سريعة وذكاء كروي حاد." data-fa="بازیکن چابک با واکنش سریع و هوش بسکتبالی تیز.">Agile court player with quick reflexes and sharp basketball IQ.</div>
+      <div class="skill-bar"><div class="skill-fill" data-level="82"></div></div>
+      <div class="skill-level"><span data-en="Experience" data-es="Experiencia" data-ar="خبرة" data-fa="تجربه">Experience</span><span data-en="10 yrs" data-es="10 años" data-ar="١٠ سنوات" data-fa="۱۰ سال">10 yrs</span></div>
+    </div>
+    <div class="skill-card reveal stagger-3">
+      <div class="skill-icon">🥊</div>
+      <div class="skill-name">Kickboxing</div>
+      <div class="skill-desc" data-en="Disciplined martial artist with focus on power, speed, and technique." data-es="Artista marcial disciplinado con enfoque en potencia, velocidad y técnica." data-ar="فنان قتالي منضبط يركز على القوة والسرعة والتقنية." data-fa="هنرمند رزمی منضبط با تمرکز بر قدرت، سرعت و تکنیک.">Disciplined martial artist with focus on power, speed, and technique.</div>
+      <div class="skill-bar"><div class="skill-fill" data-level="80"></div></div>
+      <div class="skill-level"><span data-en="Experience" data-es="Experiencia" data-ar="خبرة" data-fa="تجربه">Experience</span><span data-en="8 yrs" data-es="8 años" data-ar="٨ سنوات" data-fa="۸ سال">8 yrs</span></div>
+    </div>
+    <div class="skill-card reveal stagger-4">
+      <div class="skill-icon">💻</div>
+      <div class="skill-name" data-en="Web Development" data-es="Desarrollo Web" data-ar="تطوير الويب" data-fa="توسعه وب">Web Development</div>
+      <div class="skill-desc" data-en="Building responsive, modern web experiences with HTML, CSS &amp; JavaScript." data-es="Creando experiencias web modernas y responsivas con HTML, CSS y JavaScript." data-ar="بناء تجارب ويب حديثة ومتجاوبة بـ HTML وCSS وJavaScript." data-fa="ساخت تجربیات وب مدرن و ریسپانسیو با HTML، CSS و JavaScript.">Building responsive, modern web experiences with HTML, CSS &amp; JavaScript.</div>
+      <div class="skill-bar"><div class="skill-fill" data-level="78"></div></div>
+      <div class="skill-level"><span>HTML / CSS / JS</span><span>78%</span></div>
+    </div>
+    <div class="skill-card reveal stagger-5">
+      <div class="skill-icon">🤖</div>
+      <div class="skill-name" data-en="Telegram Bot Dev" data-es="Bots de Telegram" data-ar="بوتات تيليغرام" data-fa="توسعه بات تلگرام">Telegram Bot Dev</div>
+      <div class="skill-desc" data-en="Creating powerful, functional bots for communication, moderation, and utility." data-es="Creando bots poderosos para comunicación, moderación y utilidades." data-ar="إنشاء بوتات قوية للتواصل والإشراف والفائدة." data-fa="ساخت بات‌های قدرتمند برای ارتباط، مدیریت و ابزارهای کاربردی.">Creating powerful, functional bots for communication, moderation, and utility.</div>
+      <div class="skill-bar"><div class="skill-fill" data-level="85"></div></div>
+      <div class="skill-level"><span data-en="6+ Bots Built" data-es="6+ Bots creados" data-ar="٦+ بوتات" data-fa="۶+ بات ساخته‌شده">6+ Bots Built</span><span>85%</span></div>
+    </div>
+    <div class="skill-card reveal stagger-1">
+      <div class="skill-icon">🩺</div>
+      <div class="skill-name" data-en="Medicine" data-es="Medicina" data-ar="الطب" data-fa="پزشکی">Medicine</div>
+      <div class="skill-desc" data-en="Medic student combining analytical thinking with a passion for human health." data-es="Estudiante de medicina combinando pensamiento analítico con pasión por la salud." data-ar="طالب طب يجمع بين التفكير التحليلي والشغف بصحة الإنسان." data-fa="دانشجوی پزشکی که تفکر تحلیلی را با علاقه به سلامت انسان ترکیب می‌کند.">Medic student combining analytical thinking with a passion for human health.</div>
+      <div class="skill-bar"><div class="skill-fill" data-level="65"></div></div>
+      <div class="skill-level"><span data-en="Experience" data-es="Experiencia" data-ar="خبرة" data-fa="تجربه">Experience</span><span data-en="1 yr" data-es="1 año" data-ar="سنة واحدة" data-fa="۱ سال">1 yr</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── PROJECTS ─── -->
+<section id="projects">
+  <div class="projects-header reveal">
+    <div class="section-label" data-en="My Work" data-es="Mi trabajo" data-ar="أعمالي" data-fa="آثارم">My Work</div>
+    <h2 class="section-title"><span class="glow-text" data-en="Projects" data-es="Proyectos" data-ar="المشاريع" data-fa="پروژه‌ها">Projects</span></h2>
+  </div>
+  <div class="projects-tabs">
+    <button class="tab-btn active" onclick="filterProjects('all')" data-en="All" data-es="Todos" data-ar="الكل" data-fa="همه">All</button>
+    <button class="tab-btn" onclick="filterProjects('website')" data-en="Websites" data-es="Sitios Web" data-ar="مواقع" data-fa="وب‌سایت‌ها">Websites</button>
+    <button class="tab-btn" onclick="filterProjects('bot')" data-en="Bots" data-es="Bots" data-ar="بوتات" data-fa="بات‌ها">Bots</button>
+  </div>
+  <div class="projects-grid" id="projectsGrid">
+
+    <!-- Bots -->
+    <div class="project-card reveal stagger-1" data-type="bot">
+      <div class="project-header">
+        <div class="project-icon">🔊</div>
+        <div>
+          <div class="project-type">Telegram Bot</div>
+          <div class="project-name">Voice by Zade</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <p class="project-desc">@voicebyzadebot — AI-powered TTS bot. Create custom voices with emotions, pitch, speed & effects. Clone voices and generate high-quality speech in seconds.</p>
+        <div class="project-tags"><span class="project-tag">AI</span><span class="project-tag">TTS</span><span class="project-tag">Voice Clone</span></div>
+        <a href="https://t.me/voicebyzadebot" target="_blank" class="project-link">Open Bot →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal stagger-2" data-type="bot">
+      <div class="project-header">
+        <div class="project-icon">💬</div>
+        <div>
+          <div class="project-type">Telegram Bot</div>
+          <div class="project-name">Talk to Zade</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <p class="project-desc">@zade4everbot — Personal contact bot. Send messages directly to me on Telegram, anytime, anywhere.</p>
+        <div class="project-tags"><span class="project-tag">Contact</span><span class="project-tag">Utility</span></div>
+        <a href="https://t.me/zade4ever" target="_blank" class="project-link">Open Bot →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal stagger-3" data-type="bot">
+      <div class="project-header">
+        <div class="project-icon">🌐</div>
+        <div>
+          <div class="project-type">Telegram Bot</div>
+          <div class="project-name">Translator by Zade</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <p class="project-desc">@Translatorgemini_bot — AI translator for Arabic, Persian, Spanish & Russian. Even translates voice messages!</p>
+        <div class="project-tags"><span class="project-tag">AI</span><span class="project-tag">Gemini</span><span class="project-tag">NLP</span></div>
+        <a href="https://t.me/Translatorgemini_bot" target="_blank" class="project-link">Open Bot →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal stagger-4" data-type="bot">
+      <div class="project-header">
+        <div class="project-icon">🛡️</div>
+        <div>
+          <div class="project-type">Telegram Bot</div>
+          <div class="project-name">Cozy Guard</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <p class="project-desc">@cozy_guard_bot — Powerful group moderation bot. Keeps your Telegram groups clean, safe, and well-managed.</p>
+        <div class="project-tags"><span class="project-tag">Moderation</span><span class="project-tag">Groups</span></div>
+        <a href="https://t.me/cozy_guard_bot" target="_blank" class="project-link">Open Bot →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal stagger-5" data-type="bot">
+      <div class="project-header">
+        <div class="project-icon">🔍</div>
+        <div>
+          <div class="project-type">Telegram Bot</div>
+          <div class="project-name">Search by Zade</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <p class="project-desc">@searchbyzadebot — Search and retrieve Telegram username-to-number info with ease.</p>
+        <div class="project-tags"><span class="project-tag">Search</span><span class="project-tag">Utility</span></div>
+        <a href="https://t.me/searchbyzadebot" target="_blank" class="project-link">Open Bot →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal stagger-1" data-type="bot">
+      <div class="project-header">
+        <div class="project-icon">📊</div>
+        <div>
+          <div class="project-type">Telegram Bot</div>
+          <div class="project-name">Telelog by Zade</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <p class="project-desc">@funzstatbyzadebot — Retrieve detailed stats and information about any Telegram user.</p>
+        <div class="project-tags"><span class="project-tag">Analytics</span><span class="project-tag">User Info</span></div>
+        <a href="https://t.me/funzstatbyzadebot" target="_blank" class="project-link">Open Bot →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal stagger-2" data-type="bot">
+      <div class="project-header">
+        <div class="project-icon">📚</div>
+        <div>
+          <div class="project-type">Telegram Bot</div>
+          <div class="project-name">StudyPulse Bot</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <p class="project-desc">@Hahagdhsbaba_bot — Study tracker helper bot. Log sessions, set goals, and stay consistent with your learning.</p>
+        <div class="project-tags"><span class="project-tag">Study</span><span class="project-tag">Productivity</span></div>
+        <a href="https://t.me/Hahagdhsbaba_bot" target="_blank" class="project-link">Open Bot →</a>
+      </div>
+    </div>
+
+    <!-- Websites -->
+    <div class="project-card reveal stagger-1" data-type="website">
+      <div class="project-header">
+        <div class="project-icon">🗂️</div>
+        <div>
+          <div class="project-type" data-en="Website" data-es="Sitio Web" data-ar="موقع" data-fa="وب‌سایت">Website</div>
+          <div class="project-name">Zade's Vault</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <p class="project-desc">Secure file storage — upload, manage, and access your files anywhere with a clean, fast interface.</p>
+        <div class="project-tags"><span class="project-tag">HTML</span><span class="project-tag">CSS</span><span class="project-tag">JavaScript</span></div>
+        <a href="https://zadesvault.netlify.app" target="_blank" class="project-link">Visit Site →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal stagger-2" data-type="website">
+      <div class="project-header">
+        <div class="project-icon">🔊</div>
+        <div>
+          <div class="project-type" data-en="Website" data-es="Sitio Web" data-ar="موقع" data-fa="وب‌سایت">Website</div>
+          <div class="project-name">TTS Voice by Zade</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <p class="project-desc">Advanced text-to-speech web app. Convert text into natural-sounding audio with multiple voices and languages.</p>
+        <div class="project-tags"><span class="project-tag">HTML</span><span class="project-tag">TTS API</span></div>
+        <a href="https://ttsvoicebyzade.vercel.app" target="_blank" class="project-link">Visit Site →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal stagger-3" data-type="website">
+      <span class="game-badge">🎮 Game</span>
+      <div class="project-header">
+        <div class="project-icon">🐍</div>
+        <div>
+          <div class="project-type" data-en="Website" data-es="Sitio Web" data-ar="موقع" data-fa="وب‌سایت">Website</div>
+          <div class="project-name">ZnakeX</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <p class="project-desc">Neon snake battle game — choose skins, boost your snake, and survive in a dynamic arena to top the leaderboard.</p>
+        <div class="project-tags"><span class="project-tag">Game</span><span class="project-tag">Multiplayer</span><span class="project-tag">Browser</span></div>
+        <a href="https://znakex.netlify.app" target="_blank" class="project-link">Play Now →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal stagger-4" data-type="website">
+      <div class="project-header">
+        <div class="project-icon">📖</div>
+        <div>
+          <div class="project-type" data-en="Website" data-es="Sitio Web" data-ar="موقع" data-fa="وب‌سایت">Website</div>
+          <div class="project-name">StudyPulse by Zade</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <p class="project-desc">Productivity hub — log focused sessions, use Pomodoro timers, set goals, and compete on leaderboards.</p>
+        <div class="project-tags"><span class="project-tag">Productivity</span><span class="project-tag">Pomodoro</span></div>
+        <a href="https://studypulsebyzade.vercel.app" target="_blank" class="project-link">Visit Site →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal stagger-5" data-type="website">
+      <div class="project-header">
+        <div class="project-icon">🧠</div>
+        <div>
+          <div class="project-type" data-en="Website" data-es="Sitio Web" data-ar="موقع" data-fa="وب‌سایت">Website</div>
+          <div class="project-name">Open Z (AI)</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <p class="project-desc">Chat with advanced AI models for studying, coding, writing, and creative tasks — fast, intelligent, in-browser.</p>
+        <div class="project-tags"><span class="project-tag">AI</span><span class="project-tag">Chat</span><span class="project-tag">Productivity</span></div>
+        <a href="https://aiopenz.netlify.app" target="_blank" class="project-link">Visit Site →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal stagger-1" data-type="website">
+      <span class="game-badge">🎮 Game</span>
+      <div class="project-header">
+        <div class="project-icon">🏃</div>
+        <div>
+          <div class="project-type" data-en="Website" data-es="Sitio Web" data-ar="موقع" data-fa="وب‌سایت">Website</div>
+          <div class="project-name">RunzzZ</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <p class="project-desc">Browser runner game — dodge obstacles, collect coins, unlock achievements, and sprint to the highest score.</p>
+        <div class="project-tags"><span class="project-tag">Game</span><span class="project-tag">Runner</span><span class="project-tag">Browser</span></div>
+        <a href="https://runzzz.netlify.app" target="_blank" class="project-link">Play Now →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal stagger-2" data-type="website">
+      <span class="game-badge">🎮 Game</span>
+      <div class="project-header">
+        <div class="project-icon">🌟</div>
+        <div>
+          <div class="project-type" data-en="Website" data-es="Sitio Web" data-ar="موقع" data-fa="وب‌سایت">Website</div>
+          <div class="project-name">LifeScore by Zade</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <p class="project-desc">Interactive life assessment game — track your "Life Score," answer challenges, and climb leaderboards with streaks.</p>
+        <div class="project-tags"><span class="project-tag">Game</span><span class="project-tag">Interactive</span><span class="project-tag">Stats</span></div>
+        <a href="https://lifescorebyzade.netlify.app" target="_blank" class="project-link">Play Now →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal stagger-3" data-type="website">
+      <span class="game-badge">🎮 Game</span>
+      <div class="project-header">
+        <div class="project-icon">🔤</div>
+        <div>
+          <div class="project-type" data-en="Website" data-es="Sitio Web" data-ar="موقع" data-fa="وب‌سایت">Website</div>
+          <div class="project-name">LingoZingo</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <p class="project-desc">Word puzzle game — match letters, build vocabulary, and level up your language skills in a fun interactive interface.</p>
+        <div class="project-tags"><span class="project-tag">Game</span><span class="project-tag">Language</span><span class="project-tag">Puzzle</span></div>
+        <a href="https://lingozingo.vercel.app" target="_blank" class="project-link">Play Now →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal stagger-4" data-type="website">
+      <div class="project-header">
+        <div class="project-icon">🎨</div>
+        <div>
+          <div class="project-type" data-en="Website" data-es="Sitio Web" data-ar="موقع" data-fa="وب‌سایت">Website</div>
+          <div class="project-name">VisionCraftz</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <p class="project-desc">Creative hub with digital tools, visual showcases, and inspirations to design and explore ideas with style.</p>
+        <div class="project-tags"><span class="project-tag">Design</span><span class="project-tag">Creative</span><span class="project-tag">Tools</span></div>
+        <a href="https://visioncraftz.netlify.app" target="_blank" class="project-link">Visit Site →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal stagger-5" data-type="website">
+      <div class="project-header">
+        <div class="project-icon">💬</div>
+        <div>
+          <div class="project-type" data-en="Website" data-es="Sitio Web" data-ar="موقع" data-fa="وب‌سایت">Website</div>
+          <div class="project-name">TeleZChat</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <p class="project-desc">Web messaging app with a Telegram-style UI. Chat in real time with Zade and friends right in your browser.</p>
+        <div class="project-tags"><span class="project-tag">Chat</span><span class="project-tag">Real-time</span><span class="project-tag">Telegram UI</span></div>
+        <a href="https://telezchat.vercel.app" target="_blank" class="project-link">Visit Site →</a>
+      </div>
+    </div>
+
+    <div class="project-card reveal stagger-1" data-type="website">
+      <div class="project-header">
+        <div class="project-icon">📱</div>
+        <div>
+          <div class="project-type" data-en="Website" data-es="Sitio Web" data-ar="موقع" data-fa="وب‌سایت">Website</div>
+          <div class="project-name">ZChat</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <p class="project-desc">Instagram-style web messaging app. Chat, share media, and enjoy a sleek modern UI — all in your browser.</p>
+        <div class="project-tags"><span class="project-tag">Chat</span><span class="project-tag">Media</span><span class="project-tag">Instagram UI</span></div>
+        <a href="https://zchat-seven.vercel.app" target="_blank" class="project-link">Visit Site →</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ─── ACHIEVEMENTS ─── -->
+<section id="achievements">
+  <div class="achievements-header reveal">
+    <div class="section-label" data-en="My Milestones" data-es="Mis Logros" data-ar="إنجازاتي" data-fa="دستاوردهایم">My Milestones</div>
+    <h2 class="section-title"><span class="glow-text" data-en="Achievements" data-es="Logros" data-ar="الإنجازات" data-fa="دستاوردها">Achievements</span></h2>
+  </div>
+  <div class="achievements-grid">
+    <div class="achievement-card reveal stagger-1">
+      <div class="achievement-badge">🏆</div>
+      <div class="achievement-info">
+        <div class="achievement-title" data-en="10+ Websites Launched" data-es="10+ sitios lanzados" data-ar="أطلقت أكثر من ١٠ مواقع" data-fa="بیش از ۱۰ وب‌سایت راه‌اندازی‌شده">10+ Websites Launched</div>
+        <div class="achievement-desc" data-en="From games to productivity tools — all live and running." data-es="De juegos a herramientas de productividad — todos en línea." data-ar="من الألعاب إلى أدوات الإنتاجية — جميعها نشطة." data-fa="از بازی‌ها تا ابزارهای بهره‌وری — همه آنلاین و فعال.">From games to productivity tools — all live and running.</div>
+      </div>
+    </div>
+    <div class="achievement-card reveal stagger-2">
+      <div class="achievement-badge">🤖</div>
+      <div class="achievement-info">
+        <div class="achievement-title" data-en="6+ Telegram Bots Built" data-es="6+ bots de Telegram" data-ar="بنيت أكثر من ٦ بوتات" data-fa="بیش از ۶ بات تلگرام ساخته‌شده">6+ Telegram Bots Built</div>
+        <div class="achievement-desc" data-en="Bots serving real users with real utility every day." data-es="Bots que sirven a usuarios reales cada día." data-ar="بوتات تخدم مستخدمين حقيقيين كل يوم." data-fa="بات‌هایی که هر روز به کاربران واقعی خدمت می‌کنند.">Bots serving real users with real utility every day.</div>
+      </div>
+    </div>
+    <div class="achievement-card reveal stagger-3">
+      <div class="achievement-badge">⚽</div>
+      <div class="achievement-info">
+        <div class="achievement-title" data-en="13 Years of Football" data-es="13 años de fútbol" data-ar="١٣ عامًا في كرة القدم" data-fa="۱۳ سال فوتبال">13 Years of Football</div>
+        <div class="achievement-desc" data-en="Dedicated to the sport since childhood — discipline on and off the field." data-es="Dedicado al deporte desde la infancia." data-ar="مخلص للرياضة منذ الطفولة — انضباط داخل الملعب وخارجه." data-fa="از کودکی به این ورزش متعهد — انضباط در زمین و خارج از آن.">Dedicated to the sport since childhood — discipline on and off the field.</div>
+      </div>
+    </div>
+    <div class="achievement-card reveal stagger-4">
+      <div class="achievement-badge">🥊</div>
+      <div class="achievement-info">
+        <div class="achievement-title" data-en="8 Years of Kickboxing" data-es="8 años de kickboxing" data-ar="٨ سنوات من الكيك بوكسينج" data-fa="۸ سال کیک‌بوکسینگ">8 Years of Kickboxing</div>
+        <div class="achievement-desc" data-en="Building power, speed, and mental resilience through martial arts." data-es="Construyendo fuerza, velocidad y resiliencia mental a través de las artes marciales." data-ar="بناء القوة والسرعة والمرونة الذهنية عبر فنون الدفاع عن النفس." data-fa="ساخت قدرت، سرعت و انعطاف ذهنی از طریق هنرهای رزمی.">Building power, speed, and mental resilience through martial arts.</div>
+      </div>
+    </div>
+    <div class="achievement-card reveal stagger-5">
+      <div class="achievement-badge">🌍</div>
+      <div class="achievement-info">
+        <div class="achievement-title" data-en="Multilingual Creator" data-es="Creador Multilingüe" data-ar="صانع متعدد اللغات" data-fa="سازنده چندزبانه">Multilingual Creator</div>
+        <div class="achievement-desc" data-en="Projects and bots serving users in Arabic, Persian, Spanish, English & Russian." data-es="Proyectos y bots que sirven a usuarios en varios idiomas." data-ar="مشاريع وبوتات تخدم مستخدمين بالعربية والفارسية والإسبانية والإنجليزية والروسية." data-fa="پروژه‌ها و بات‌هایی که کاربران عربی، فارسی، اسپانیایی، انگلیسی و روسی را خدمت می‌کنند.">Projects and bots serving users in Arabic, Persian, Spanish, English & Russian.</div>
+      </div>
+    </div>
+    <div class="achievement-card reveal stagger-1">
+      <div class="achievement-badge">🩺</div>
+      <div class="achievement-info">
+        <div class="achievement-title" data-en="Medicine + Code" data-es="Medicina + Código" data-ar="الطب + البرمجة" data-fa="پزشکی + کدنویسی">Medicine + Code</div>
+        <div class="achievement-desc" data-en="Studying medicine while shipping real software — no excuses, only results." data-es="Estudiando medicina mientras construye software real — sin excusas, solo resultados." data-ar="يدرس الطب ويطور برامج حقيقية في آنٍ واحد — لا أعذار، فقط نتائج." data-fa="پزشکی می‌خواند و نرم‌افزار واقعی می‌سازد — بدون بهانه، فقط نتیجه.">Studying medicine while shipping real software — no excuses, only results.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FUN FACTS ─── -->
+<section id="funfacts">
+  <div class="funfacts-header reveal">
+    <div class="section-label" data-en="Did You Know?" data-es="¿Sabías que?" data-ar="هل تعلم؟" data-fa="آیا می‌دانستید؟">Did You Know?</div>
+    <h2 class="section-title"><span class="glow-text" data-en="Fun Facts About Me" data-es="Datos Curiosos" data-ar="حقائق ممتعة عني" data-fa="واقعیت‌های جالب درباره من">Fun Facts About Me</span></h2>
+  </div>
+  <div class="funfacts-grid">
+    <div class="funfact-card reveal stagger-1">
+      <div class="funfact-num">01</div>
+      <div class="funfact-text" data-en="I started coding at <strong>age 14</strong> — my first project was a Telegram bot, not a website." data-es="Empecé a programar a los <strong>14 años</strong> — mi primer proyecto fue un bot de Telegram." data-ar="بدأت البرمجة في سن <strong>١٤ عامًا</strong> — كان مشروعي الأول بوت تيليغرام." data-fa="در سن <strong>۱۴ سالگی</strong> کدنویسی را شروع کردم — اولین پروژه‌ام یک بات تلگرام بود.">I started coding at <strong>age 14</strong> — my first project was a Telegram bot, not a website.</div>
+    </div>
+    <div class="funfact-card reveal stagger-2">
+      <div class="funfact-num">02</div>
+      <div class="funfact-text" data-en="I practice <strong>3 different sports</strong> and train almost every single day — rest is earned." data-es="Practico <strong>3 deportes diferentes</strong> y entreno casi todos los días — el descanso se gana." data-ar="أمارس <strong>٣ رياضات مختلفة</strong> وأتدرب كل يوم تقريبًا — الراحة تُكتسب." data-fa="<strong>۳ ورزش مختلف</strong> تمرین می‌کنم و تقریباً هر روز — استراحت باید کسب شود.">I practice <strong>3 different sports</strong> and train almost every single day — rest is earned.</div>
+    </div>
+    <div class="funfact-card reveal stagger-3">
+      <div class="funfact-num">03</div>
+      <div class="funfact-text" data-en="My bots have been used by people in <strong>5+ countries</strong>, including Iraq, Iran, Mexico, Russia, and Spain." data-es="Mis bots han sido usados en <strong>5+ países</strong>, incluyendo Irak, Irán, México, Rusia y España." data-ar="استُخدمت بوتاتي من قبل أشخاص في <strong>أكثر من ٥ دول</strong>، منها العراق وإيران والمكسيك وروسيا وإسبانيا." data-fa="بات‌هایم توسط افرادی در <strong>بیش از ۵ کشور</strong> استفاده شده‌اند، از جمله عراق، ایران، مکزیک، روسیه و اسپانیا.">My bots have been used by people in <strong>5+ countries</strong>, including Iraq, Iran, Mexico, Russia, and Spain.</div>
+    </div>
+    <div class="funfact-card reveal stagger-4">
+      <div class="funfact-num">04</div>
+      <div class="funfact-text" data-en="I'm a <strong>medical student</strong> by day and a full-stack developer by night — sleep is optional." data-es="Soy <strong>estudiante de medicina</strong> de día y desarrollador full-stack de noche — el sueño es opcional." data-ar="أنا <strong>طالب طب</strong> نهارًا ومطور full-stack ليلًا — النوم اختياري." data-fa="روزها <strong>دانشجوی پزشکی</strong> هستم و شب‌ها توسعه‌دهنده فول‌استک — خواب اختیاری است.">I'm a <strong>medical student</strong> by day and a full-stack developer by night — sleep is optional.</div>
+    </div>
+    <div class="funfact-card reveal stagger-5">
+      <div class="funfact-num">05</div>
+      <div class="funfact-text" data-en="All my projects are <strong>self-taught</strong> — no bootcamps, no tutors, just YouTube, docs, and pure determination." data-es="Todos mis proyectos son <strong>autodidactas</strong> — sin bootcamps, solo YouTube, docs y determinación pura." data-ar="كل مشاريعي <strong>بالتعلم الذاتي</strong> — بدون دورات، فقط يوتيوب والوثائق والإصرار." data-fa="تمام پروژه‌هایم <strong>خودآموخته</strong> هستند — بدون بوت‌کمپ، فقط یوتیوب، مستندات و اراده خالص.">All my projects are <strong>self-taught</strong> — no bootcamps, no tutors, just YouTube, docs, and pure determination.</div>
+    </div>
+    <div class="funfact-card reveal stagger-1">
+      <div class="funfact-num">06</div>
+      <div class="funfact-text" data-en="I once built and deployed a complete web app in <strong>under 6 hours</strong> — including design, code, and hosting." data-es="Una vez construí y desplegué una aplicación web completa en <strong>menos de 6 horas</strong>." data-ar="بنيت وطرحت تطبيق ويب كاملًا في <strong>أقل من ٦ ساعات</strong> — تصميمًا وكودًا واستضافةً." data-fa="یک بار یک اپ وب کامل را در <strong>کمتر از ۶ ساعت</strong> ساختم و منتشر کردم.">I once built and deployed a complete web app in <strong>under 6 hours</strong> — including design, code, and hosting.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CONTACT ─── -->
+<section id="contact">
+  <div class="contact-info reveal-left">
+    <div class="section-label" data-en="Get In Touch" data-es="Contacta" data-ar="تواصل معي" data-fa="در تماس باش">Get In Touch</div>
+    <h2 class="section-title"><span class="glow-text" data-en="Let's Connect" data-es="Conectemos" data-ar="لنتواصل" data-fa="بیایید ارتباط برقرار کنیم">Let's Connect</span></h2>
+    <p class="contact-desc" id="contactDesc" data-en="Have a project in mind, want to collaborate, or just want to say hi? Reach out — I'd love to hear from you." data-es="¿Tienes un proyecto, quieres colaborar o simplemente saludar? Escríbeme." data-ar="هل لديك مشروع، أو تريد التعاون، أو فقط تقول مرحبًا؟ تواصل معي." data-fa="پروژه‌ای در ذهن دارید، می‌خواهید همکاری کنید یا فقط سلام بدهید؟ تماس بگیرید.">Have a project in mind, want to collaborate, or just want to say hi? Reach out — I'd love to hear from you.</p>
+    <div class="social-links">
+      <a href="https://t.me/zade4ever" target="_blank" class="social-btn">
+        <span class="social-btn-icon">
+          <img src="tg.png" alt="Telegram">
+        </span>
+        <div>
+          <div class="social-btn-name">Telegram</div>
+          <div class="social-btn-handle">@zade4ever</div>
+        </div>
+        <span class="social-btn-arrow">→</span>
+      </a>
+      <a href="https://instagram.com/suspend.z" target="_blank" class="social-btn">
+        <span class="social-btn-icon">
+          <img src="ig.png" alt="Instagram">
+        </span>
+        <div>
+          <div class="social-btn-name">Instagram</div>
+          <div class="social-btn-handle">@suspend.z</div>
+        </div>
+        <span class="social-btn-arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="contact-form reveal-right">
+    <div class="form-title" id="formTitle" data-en="Send a Message" data-es="Enviar Mensaje" data-ar="أرسل رسالة" data-fa="پیام بفرستید">Send a Message</div>
+    <div id="formSuccess" class="form-success">✅ <span data-en="Message sent! I'll get back to you soon." data-es="¡Mensaje enviado! Te responderé pronto." data-ar="تم الإرسال! سأرد عليك قريبًا." data-fa="پیام ارسال شد! به زودی پاسخ می‌دهم.">Message sent! I'll get back to you soon.</span></div>
+    <div class="form-group">
+      <label id="labelName" data-en="NAME" data-es="NOMBRE" data-ar="الاسم" data-fa="نام">NAME</label>
+      <input type="text" id="fname" placeholder="Your name" data-en-ph="Your name" data-es-ph="Tu nombre" data-ar-ph="اسمك" data-fa-ph="نام شما">
+      <div class="form-error" id="errName">Please enter your name.</div>
+    </div>
+    <div class="form-group">
+      <label id="labelEmail" data-en="EMAIL" data-es="CORREO" data-ar="البريد الإلكتروني" data-fa="ایمیل">EMAIL</label>
+      <input type="email" id="femail" placeholder="your@email.com" data-en-ph="your@email.com" data-es-ph="tu@correo.com" data-ar-ph="بريدك@الإلكتروني.com" data-fa-ph="ایمیل@شما.com">
+      <div class="form-error" id="errEmail">Please enter a valid email.</div>
+    </div>
+    <div class="form-group">
+      <label id="labelMsg" data-en="MESSAGE" data-es="MENSAJE" data-ar="الرسالة" data-fa="پیام">MESSAGE</label>
+      <textarea id="fmsg" placeholder="Your message here..." data-en-ph="Your message here..." data-es-ph="Tu mensaje aquí..." data-ar-ph="رسالتك هنا..." data-fa-ph="پیام شما اینجا..."></textarea>
+      <div class="form-error" id="errMsg">Please write a message.</div>
+    </div>
+    <button class="submit-btn" onclick="submitForm()" id="submitBtn" data-en="Send Message →" data-es="Enviar Mensaje →" data-ar="إرسال الرسالة →" data-fa="ارسال پیام →">Send Message →</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 <span>Zade</span> • Monterrey, Mexico • Made with <span>♥</span> & Code</p>
+</footer>
+
+<script>
+// ─── SPLASH ───
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('splash').classList.add('hide');
+  }, 2600);
+});
+
+// ─── SCROLL PROGRESS ───
+window.addEventListener('scroll', () => {
+  const doc = document.documentElement;
+  const scrollTop = doc.scrollTop || document.body.scrollTop;
+  const scrollHeight = doc.scrollHeight - doc.clientHeight;
+  const pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+  document.getElementById('scroll-progress').style.width = pct + '%';
+});
+
+// ─── CURSOR ───
+const cursor = document.getElementById('cursor');
+const trail = document.getElementById('cursor-trail');
+let mx = 0, my = 0, tx = 0, ty = 0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+});
+function animTrail() {
+  tx += (mx - tx) * 0.12; ty += (my - ty) * 0.12;
+  trail.style.left = tx + 'px'; trail.style.top = ty + 'px';
+  requestAnimationFrame(animTrail);
+}
+animTrail();
+document.querySelectorAll('a, button, .skill-card, .project-card, .social-btn').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.style.width = '40px'; cursor.style.height = '40px'; });
+  el.addEventListener('mouseleave', () => { cursor.style.width = '20px'; cursor.style.height = '20px'; });
+});
+
+// ─── PARTICLES ───
+const canvas = document.getElementById('particles-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+for (let i = 0; i < 80; i++) {
+  particles.push({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 1.5 + .3,
+    dx: (Math.random() - .5) * .3,
+    dy: (Math.random() - .5) * .3,
+    a: Math.random() * .6 + .1,
+    color: Math.random() > .5 ? '0,212,255' : '123,47,255'
+  });
+}
+function drawParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${p.color},${p.a})`;
+    ctx.fill();
+    p.x += p.dx; p.y += p.dy;
+    if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+    if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+  });
+  // draw lines
+  particles.forEach((p, i) => {
+    particles.slice(i + 1).forEach(q => {
+      const d = Math.hypot(p.x - q.x, p.y - q.y);
+      if (d < 100) {
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(q.x, q.y);
+        ctx.strokeStyle = `rgba(0,212,255,${.08 * (1 - d/100)})`;
+        ctx.lineWidth = .5;
+        ctx.stroke();
+      }
+    });
+  });
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+// ─── PARALLAX ───
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  document.querySelector('.blob1').style.transform = `translate(${y*.05}px,${y*.08}px)`;
+  document.querySelector('.blob2').style.transform = `translate(${-y*.04}px,${y*.06}px)`;
+  document.querySelector('.blob3').style.transform = `translate(${y*.03}px,${-y*.05}px)`;
+});
+
+// ─── NAV SCROLL ───
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// ─── HAMBURGER (improved) ───
+function toggleMenu() {
+  const overlay = document.getElementById('mobileOverlay');
+  const hamburger = document.getElementById('hamburger');
+  const isOpen = overlay.classList.contains('open');
+  overlay.classList.toggle('open');
+  hamburger.classList.toggle('active');
+  document.body.style.overflow = isOpen ? '' : 'hidden';
+}
+function closeMobileMenu(e) {
+  if (e.target === document.getElementById('mobileOverlay')) toggleMenu();
+}
+
+// ─── TYPING ANIMATION ───
+const phrases = {
+  en: ["Building the future one bot at a time.","Football. Basketball. Kickboxing.","Medic student & full-stack dreamer.","From Monterrey to the world."],
+  es: ["Construyendo el futuro un bot a la vez.","Fútbol. Baloncesto. Kickboxing.","Estudiante de medicina & desarrollador.","De Monterrey para el mundo."],
+  ar: ["أبني المستقبل بوتًا واحدًا في كل مرة.","كرة قدم. سلة. كيك بوكسينج.","طالب طب وحالم بالبرمجة.","من مونتيري إلى العالم."],
+  fa: ["آینده را یک بات در یک زمان می‌سازم.","فوتبال. بسکتبال. کیک‌بوکسینگ.","دانشجوی پزشکی و رویاپرداز فول‌استک.","از مونترِی به جهان."]
+};
+let pIdx = 0, cIdx = 0, deleting = false;
+const typedEl = document.getElementById('typedText');
+function type() {
+  const src = phrases[lang] || phrases.en;
+  const cur = src[pIdx % src.length];
+  if (!deleting) {
+    typedEl.textContent = cur.slice(0, ++cIdx);
+    if (cIdx === cur.length) { deleting = true; setTimeout(type, 2000); return; }
+  } else {
+    typedEl.textContent = cur.slice(0, --cIdx);
+    if (cIdx === 0) { deleting = false; pIdx++; setTimeout(type, 300); return; }
+  }
+  setTimeout(type, deleting ? 40 : 70);
+}
+setTimeout(type, 2800);
+
+// ─── SCROLL REVEAL ───
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(r => revealObs.observe(r));
+
+// ─── SKILL BARS ───
+const skillObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.skill-fill').forEach(bar => { bar.style.width = bar.dataset.level + '%'; });
+      skillObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.3 });
+document.querySelectorAll('.skill-card').forEach(c => skillObs.observe(c));
+
+// ─── ANIMATED COUNTERS ───
+const counterObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.counter').forEach(counter => {
+        const target = parseInt(counter.dataset.target);
+        let cur = 0;
+        const step = Math.max(1, Math.floor(target / 40));
+        const timer = setInterval(() => {
+          cur = Math.min(cur + step, target);
+          counter.textContent = cur;
+          if (cur >= target) clearInterval(timer);
+        }, 50);
+      });
+      counterObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('.about-card').forEach(c => counterObs.observe(c));
+
+// ─── PROJECT FILTER ───
+function filterProjects(type) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('.project-card').forEach(card => {
+    card.style.display = (type === 'all' || card.dataset.type === type) ? '' : 'none';
+  });
+}
+
+// ─── CONFETTI ───
+function launchConfetti() {
+  const colors = ['#00d4ff','#7b2fff','#ff2fbd','#fff','#ffdd00','#00ffb4'];
+  for (let i = 0; i < 90; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + 'vw';
+    piece.style.top = '-10px';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDuration = (Math.random() * 1.5 + 1.5) + 's';
+    piece.style.animationDelay = (Math.random() * 0.8) + 's';
+    piece.style.transform = `rotate(${Math.random()*360}deg)`;
+    piece.style.width = (Math.random() * 8 + 4) + 'px';
+    piece.style.height = (Math.random() * 8 + 4) + 'px';
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 3500);
+  }
+}
+
+// ─── FORM ───
+async function submitForm() {
+  let valid = true;
+  const name = document.getElementById('fname').value.trim();
+  const email = document.getElementById('femail').value.trim();
+  const msg = document.getElementById('fmsg').value.trim();
+  document.querySelectorAll('.form-error').forEach(e => e.style.display = 'none');
+  if (!name) { document.getElementById('errName').style.display = 'block'; valid = false; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById('errEmail').style.display = 'block'; valid = false; }
+  if (!msg) { document.getElementById('errMsg').style.display = 'block'; valid = false; }
+  if (!valid) return;
+
+  const btn = document.getElementById('submitBtn');
+  btn.textContent = 'Sending...'; btn.disabled = true; btn.style.opacity = '0.7';
+
+  try {
+    const response = await fetch('https://formspree.io/f/mojnnbwy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ name, email, message: msg })
+    });
+    if (response.ok) {
+      document.getElementById('formSuccess').style.display = 'block';
+      document.getElementById('fname').value = '';
+      document.getElementById('femail').value = '';
+      document.getElementById('fmsg').value = '';
+      launchConfetti();
+      setTimeout(() => document.getElementById('formSuccess').style.display = 'none', 5000);
+    } else {
+      alert('Something went wrong. Please try again.');
+    }
+  } catch (err) {
+    alert('Network error. Please check your connection and try again.');
+  }
+
+  btn.textContent = document.getElementById('submitBtn').getAttribute(`data-${lang}`) || 'Send Message →';
+  btn.disabled = false; btn.style.opacity = '1';
+}
+
+// ─── LANGUAGE CYCLE (EN / ES / AR / FA) ───
+let lang = 'en';
+const langOrder = ['en', 'es', 'ar', 'fa'];
+const langLabels = { en: 'ES', es: 'AR', ar: 'FA', fa: 'EN' };
+const heroDescs = {
+  en: 'Based in Monterrey, Mexico — I train hard, build smart, and keep learning. From the football pitch to the kickboxing gym, and from the code editor to Telegram bots — I live at the intersection of discipline and technology.',
+  es: 'Radicado en Monterrey, México — entreno duro, construyo con inteligencia y sigo aprendiendo. Del campo de fútbol al gimnasio de kickboxing, y del editor de código a los bots de Telegram.',
+  ar: 'مقيم في مونتيري، المكسيك — أتدرب بجد، وأبني بذكاء، وأواصل التعلم. من ملعب كرة القدم إلى صالة الكيك بوكسينج، ومن محرر الكود إلى بوتات التيليغرام.',
+  fa: 'مقیم در مونترِی، مکزیک — سخت تمرین می‌کنم، هوشمندانه می‌سازم و یاد می‌گیرم. از زمین فوتبال تا باشگاه کیک‌بوکسینگ، و از ویرایشگر کد تا بات‌های تلگرام.'
+};
+
+function cycleLang() {
+  const idx = langOrder.indexOf(lang);
+  lang = langOrder[(idx + 1) % langOrder.length];
+
+  // Update lang btn labels
+  const nextLabel = langLabels[lang];
+  document.getElementById('langBtn').textContent = nextLabel;
+  const mBtn = document.getElementById('mobileLangBtn');
+  if (mBtn) mBtn.textContent = nextLabel;
+
+  // Update direction for Arabic/Persian
+  document.documentElement.dir = (lang === 'ar' || lang === 'fa') ? 'rtl' : 'ltr';
+
+  // Text nodes
+  document.querySelectorAll(`[data-${lang}]`).forEach(el => {
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') return;
+    const val = el.getAttribute(`data-${lang}`);
+    if (val) el.textContent = val;
+  });
+
+  // Inner HTML nodes (fun facts have <strong>)
+  document.querySelectorAll('.funfact-text').forEach(el => {
+    const val = el.getAttribute(`data-${lang}`);
+    if (val) el.innerHTML = val;
+  });
+
+  // Placeholders
+  document.querySelectorAll(`[data-${lang}-ph]`).forEach(el => {
+    el.placeholder = el.getAttribute(`data-${lang}-ph`);
+  });
+
+  // Hero desc
+  document.getElementById('heroDesc').textContent = heroDescs[lang] || heroDescs.en;
+}
+</script>
+</body>
+</html>
